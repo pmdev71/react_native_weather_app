@@ -6,106 +6,91 @@
  * @flow strict-local
  */
 
-import React from 'react';
-import type {Node} from 'react';
+import React, {useCallback, useState} from 'react';
+import axios from 'axios';
+
 import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
+  ActivityIndicator,
+  ImageBackground,
   StyleSheet,
   Text,
-  useColorScheme,
+  TextInput,
   View,
 } from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+const App = () => {
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState([]);
+  const API_KEY = '0f4486b55be8c40c937d88800ed6991a';
 
-const Section = ({children, title}): Node => {
-  const isDarkMode = useColorScheme() === 'dark';
+  const fetchDataHandler = useCallback(() => {
+    setLoading(true);
+    axios
+      .get(
+        `https://api.openweathermap.org/data/2.5/weather?q=${input}&units=metric&appid=${API_KEY}`,
+      )
+      .then(res => {
+        console.log(res.data);
+        setData(res.data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.log(err);
+        setLoading(false);
+      });
+  }, [API_KEY, input]);
+
   return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
+    <View style={styles.root}>
+      <ImageBackground
+        resizeMode="cover"
+        style={styles.image}
+        source={require('./assets/background.png')}>
+        <View style={styles.topBar}>
+          <TextInput
+            style={styles.textInput}
+            placeholder="Enter city name"
+            placeholderTextColor={'black'}
+            onChangeText={val => setInput(val)}
+            onSubmitEditing={fetchDataHandler}
+            value={input}
+          />
+          <Text>{data.name}</Text>
+          <Text>Hello, {input}</Text>
+        </View>
+        {loading && (
+          <View>
+            <ActivityIndicator size="large" color="white" />
+          </View>
+        )}
+      </ImageBackground>
     </View>
   );
 };
 
-const App: () => Node = () => {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.js</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-};
-
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  root: {
+    flex: 1,
+    backgroundColor: '#fff',
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  image: {
+    flex: 1,
+    flexDirection: 'column',
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
+  topBar: {
+    alignItems: 'center',
   },
-  highlight: {
-    fontWeight: '700',
+  textInput: {
+    width: '80%',
+    height: 40,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    color: '#000',
+    marginVertical: 20,
+    marginTop: 30,
   },
 });
 
