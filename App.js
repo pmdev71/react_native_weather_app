@@ -21,7 +21,7 @@ import {
 const App = () => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState([]);
+  const [data, setData] = useState(null);
   const API_KEY = '0f4486b55be8c40c937d88800ed6991a';
 
   const fetchDataHandler = useCallback(() => {
@@ -31,9 +31,10 @@ const App = () => {
         `https://api.openweathermap.org/data/2.5/weather?q=${input}&units=metric&appid=${API_KEY}`,
       )
       .then(res => {
-        console.log(res.data);
+        // console.log(res.data);
         setData(res.data);
         setLoading(false);
+        setInput('');
       })
       .catch(err => {
         console.log(err);
@@ -56,12 +57,27 @@ const App = () => {
             onSubmitEditing={fetchDataHandler}
             value={input}
           />
-          <Text>{data.name}</Text>
-          <Text>Hello, {input}</Text>
         </View>
         {loading && (
           <View>
             <ActivityIndicator size="large" color="white" />
+          </View>
+        )}
+
+        {data && (
+          <View style={styles.infoView}>
+            <Text style={styles.cityCountryText}>
+              {`${data?.name}, ${data?.sys?.country}`}
+            </Text>
+            <Text style={styles.dateText}>{new Date().toLocaleString()}</Text>
+            <Text style={styles.tempText}>
+              {`${Math.round(data?.main?.temp)} °C`}
+            </Text>
+            <Text style={styles.minMaxText}>
+              {`Min ${Math.round(data?.main?.temp_min)} °C || Max ${Math.round(
+                data?.main?.temp_max,
+              )} °C`}
+            </Text>
           </View>
         )}
       </ImageBackground>
@@ -91,6 +107,34 @@ const styles = StyleSheet.create({
     color: '#000',
     marginVertical: 20,
     marginTop: 30,
+  },
+  cityCountryText: {
+    marginTop: '40%',
+    color: '#fff',
+    fontSize: 35,
+    fontWeight: '700',
+  },
+
+  infoView: {
+    alignItems: 'center',
+  },
+
+  dateText: {
+    color: '#fff',
+    fontSize: 22,
+    marginVertical: 10,
+  },
+  tempText: {
+    fontSize: 35,
+    fontWeight: '700',
+    color: '#fff',
+    marginVertical: 10,
+  },
+  minMaxText: {
+    fontSize: 18,
+    color: '#fff',
+    marginVertical: 10,
+    fontWeight: '500',
   },
 });
 
